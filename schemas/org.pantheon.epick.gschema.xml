@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.pantheon.epick" path="/org/pantheon/epick/">
+		<key type="s" name="color-format">
+			<default>"hex"</default>
+			<summary>ePick color format</summary>
+			<description>Set to "hex" or "rgb"</description>
+		</key>
+		<key type="b" name="close-to-systray">
+			<default>true</default>
+			<summary>Close to systray</summary>
+			<description>If true, epick will stay in the systray when closed</description>
+		</key>
+		<key type="b" name="start-in-systray">
+			<default>true</default>
+			<summary>Start in systray</summary>
+			<description>If true, epick will start minimized in the systray</description>
+		</key>
+		<key type="b" name="grab-mouse-pointer">
+			<default>true</default>
+			<summary>Grab mouse pointer</summary>
+			<description>If true, epick will grab the mouse pointer during color picking and thus block the GUI</description>
+		</key>
+	</schema>
+</schemalist>

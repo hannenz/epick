@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=ePick
+GenericName=Color Picker
+Comment=Color picker tool for elementaryOS
+Categories=GTK;Utility;
+Exec=epick
+Icon=epick
+Terminal=false
+Type=Application
+X-GNOME-Gettext-Domain=epick
+

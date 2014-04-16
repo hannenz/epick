@@ -39,6 +39,8 @@ namespace EPick {
 
 		protected Clipboard clipboard;
 
+		protected SettingsDialog settings_dialog;
+
 		// Constants 
 		protected const int previewSize = 150;
 		protected const double previewScale = 4;
@@ -98,6 +100,9 @@ namespace EPick {
 			};
 
 			clipboard = Gtk.Clipboard.get_for_display(display, Gdk.SELECTION_CLIPBOARD);
+
+			settings_dialog = new SettingsDialog();
+			settings_dialog.set_settings(settings);
 		}
 
 		protected void build_indicator() {
@@ -114,6 +119,12 @@ namespace EPick {
 			item.activate.connect(open);
 			menu.append(item);
 
+			item = new Gtk.MenuItem.with_label("Settings");
+			item.activate.connect( () => {
+					settings_dialog.show_all();
+				});
+			menu.append(item);
+
 			item = new Gtk.MenuItem.with_label("Exit");
 			item.activate.connect(Gtk.main_quit);
 			menu.append(item);
@@ -121,6 +132,7 @@ namespace EPick {
 
 			indicator.set_menu(menu);
 		}
+
 
 		protected void quit() {
 			if (settings.get_boolean("grab-mouse-pointer")){

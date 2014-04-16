@@ -41,6 +41,8 @@ namespace EPick {
 
 		protected SettingsDialog settings_dialog;
 
+		protected Gtk.Menu menu;
+
 		// Constants 
 		protected const int previewSize = 150;
 		protected const double previewScale = 4;
@@ -92,6 +94,8 @@ namespace EPick {
 			manager = display.get_device_manager();
 			mouse = manager.get_client_pointer();
 
+			window.set_events(EventMask.BUTTON_PRESS_MASK);
+
 			build_indicator();
 
 			color_format = settings.get_string("color-format") == "hex" ? 0 : 1;
@@ -110,7 +114,7 @@ namespace EPick {
 			indicator.set_icon("/usr/share/icons/hicolor/128x218/apps/epick.png");
 			indicator.set_status(IndicatorStatus.ACTIVE);
 
-			Gtk.Menu menu = new Gtk.Menu();
+			menu = new Gtk.Menu();
 
 			Gtk.MenuItem item;
 
@@ -148,18 +152,38 @@ namespace EPick {
 		protected void open() {
 			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
 			if (settings.get_boolean("grab-mouse-pointer")){
-				this.mouse.grab(this.window, Gdk.GrabOwnership.NONE, false, EventMask.ALL_EVENTS_MASK, crosshair, Gdk.CURRENT_TIME);
+				this.mouse.grab(this.window, Gdk.GrabOwnership.APPLICATION, false, EventMask.ALL_EVENTS_MASK, crosshair, Gdk.CURRENT_TIME);
 			}
 			this.show_all();
 		}
 
-		protected void close() {
+		protected void add_to_palette() {
+			//palette.append(color);
+
+			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 24, 24);
+			pixbuf.fill((uint32)(current_color.red * 256 * 4294967296 + current_color.green * 256 * 65536 + current_color.blue * 256 * 256));
+
+			Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);
+
+			Gtk.ImageMenuItem item = new Gtk.ImageMenuItem.with_label(color_string);
+			item.set_image(image);
+
+			menu.append(item);
+			item.activate.connect( () => {
+					clipboard.set_text(item.get_label(), -1);
+				});
+			menu.show_all();
+		}
+
+/*		protected void close() {
 			mouse.ungrab(Gdk.CURRENT_TIME);
 			this.hide();
 		}
 
-		protected void pick() {
+*/		protected void pick() {
 			clipboard.set_text(color_string, -1);
+			add_to_palette();
+
 		}
 
 		private bool on_draw(Context ctx) {
@@ -245,6 +269,12 @@ namespace EPick {
 			}
 
 			this.move(posX, posY);
+
+			Gdk.Event event = display.get_event();
+			if (event != null && event.type == EventType.BUTTON_PRESS){
+				stdout.printf("click\n");
+			}
+
 		}
 
 		static int main(string[] args){

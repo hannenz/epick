@@ -68,7 +68,7 @@ namespace EPick {
 						break;
 
 					default:
-						close();
+						quit();
 						break;
 
 
@@ -101,8 +101,7 @@ namespace EPick {
 
 			clipboard = Gtk.Clipboard.get_for_display(display, Gdk.SELECTION_CLIPBOARD);
 
-			settings_dialog = new SettingsDialog();
-			settings_dialog.set_settings(settings);
+			settings_dialog = new SettingsDialog(settings);
 		}
 
 		protected void build_indicator() {
@@ -126,7 +125,7 @@ namespace EPick {
 			menu.append(item);
 
 			item = new Gtk.MenuItem.with_label("Exit");
-			item.activate.connect(Gtk.main_quit);
+			item.activate.connect(quit);
 			menu.append(item);
 			menu.show_all();
 

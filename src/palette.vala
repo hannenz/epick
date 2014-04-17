@@ -1,5 +1,0 @@
-using Gtk;
-
-namespace EPIck {
-
-}

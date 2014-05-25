@@ -6,6 +6,11 @@
  *
  * @author Johannes Braun <me@hannenz.de>
  * 2014-04
+ *
+ * TODO: Implement color class
+ * 		internal: RGB as Integer
+ * 		methods to in- and output from/ to "hex", "rgb(r,g,b)", RGBA32 RGBA 8-bit, XColorName
+ * 		Maybe extend Gdk.RGBA
  */ 
 using Gtk;
 using Gdk;
@@ -43,6 +48,8 @@ namespace EPick {
 
 		protected Gtk.Menu menu;
 
+		protected PaletteWindow palette_window;
+
 		// Constants 
 		protected const int previewSize = 150;
 		protected const double previewScale = 4;
@@ -70,9 +77,8 @@ namespace EPick {
 						break;
 
 					default:
-						quit();
+						close();
 						break;
-
 
 				}
 				return false;
@@ -94,7 +100,7 @@ namespace EPick {
 			manager = display.get_device_manager();
 			mouse = manager.get_client_pointer();
 
-			window.set_events(EventMask.BUTTON_PRESS_MASK);
+//			window.set_events(EventMask.BUTTON_PRESS_MASK);
 
 			build_indicator();
 
@@ -106,6 +112,8 @@ namespace EPick {
 			clipboard = Gtk.Clipboard.get_for_display(display, Gdk.SELECTION_CLIPBOARD);
 
 			settings_dialog = new SettingsDialog(settings);
+
+			palette_window  = new PaletteWindow();
 		}
 
 		protected void build_indicator() {
@@ -128,6 +136,12 @@ namespace EPick {
 				});
 			menu.append(item);
 
+			item = new Gtk.MenuItem.with_label("Palette");
+			item.activate.connect( () => {
+					palette_window.show_all();
+				});
+			menu.append(item);
+
 			item = new Gtk.MenuItem.with_label("Exit");
 			item.activate.connect(quit);
 			menu.append(item);
@@ -136,8 +150,14 @@ namespace EPick {
 			indicator.set_menu(menu);
 		}
 
-
 		protected void quit() {
+			if (settings.get_boolean("grab-mouse-pointer")){
+				this.mouse.ungrab(Gdk.CURRENT_TIME);
+			}
+			Gtk.main_quit();
+		}
+
+		protected void close() {
 			if (settings.get_boolean("grab-mouse-pointer")){
 				this.mouse.ungrab(Gdk.CURRENT_TIME);
 			}
@@ -160,27 +180,48 @@ namespace EPick {
 		protected void add_to_palette() {
 			//palette.append(color);
 
-			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 24, 24);
-			pixbuf.fill((uint32)(current_color.red * 256 * 4294967296 + current_color.green * 256 * 65536 + current_color.blue * 256 * 256));
+			/**
+			 * TODO: Don"t add doublettes!
+			 * TODO: Lookup color names
+			 */
+
+			TreeIter iter;
+			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 24);
+			uint32 _col = 
+				(0xFF << 0) +
+				((uint32)(current_color.blue  * 256) << 8) +
+				((uint32)(current_color.green * 256) << 16) +
+				((uint32)(current_color.red   * 256) << 24) +
+				0
+			;
+
+			pixbuf.fill(_col);
+
+			palette_window.palette.append(out iter);
+			palette_window.palette.set(iter, 0, pixbuf);
+			palette_window.palette.set(iter, 1, color_string);
+			palette_window.palette.set(iter, 2, "Unknown color");
+
 
 			Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);
 
 			Gtk.ImageMenuItem item = new Gtk.ImageMenuItem.with_label(color_string);
 			item.set_image(image);
-
-			menu.append(item);
 			item.activate.connect( () => {
 					clipboard.set_text(item.get_label(), -1);
 				});
+
+//			menu.append(item);
 			menu.show_all();
 		}
+
 
 /*		protected void close() {
 			mouse.ungrab(Gdk.CURRENT_TIME);
 			this.hide();
 		}
-
-*/		protected void pick() {
+*/		
+		protected void pick() {
 			clipboard.set_text(color_string, -1);
 			add_to_palette();
 		}
@@ -269,11 +310,11 @@ namespace EPick {
 
 			this.move(posX, posY);
 
-			Gdk.Event event = display.get_event();
+/*			Gdk.Event event = display.get_event();
 			if (event != null && event.type == EventType.BUTTON_PRESS){
 				stdout.printf("click\n");
 			}
-
+*/
 		}
 
 		static int main(string[] args){

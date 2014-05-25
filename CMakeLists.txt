@@ -42,6 +42,7 @@ include(ValaPrecompile)
 vala_precompile(VALA_C ${EXEC_NAME}
 	src/epick.vala
 	src/settings_dialog.vala
+	src/palette_window.vala
 PACKAGES
 	gtk+-3.0
 	granite

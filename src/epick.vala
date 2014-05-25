@@ -183,7 +183,6 @@ namespace EPick {
 */		protected void pick() {
 			clipboard.set_text(color_string, -1);
 			add_to_palette();
-
 		}
 
 		private bool on_draw(Context ctx) {

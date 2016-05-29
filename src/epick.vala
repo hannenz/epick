@@ -71,6 +71,8 @@ namespace EPick {
 			);
 			this.key_press_event.connect( (event_key) => {
 
+				debug ("Key: %^u".printf(event_key.keyval));
+
 				switch (event_key.keyval){
 					case 32:
 						pick();
@@ -100,7 +102,7 @@ namespace EPick {
 			manager = display.get_device_manager();
 			mouse = manager.get_client_pointer();
 
-//			window.set_events(EventMask.BUTTON_PRESS_MASK);
+			window.set_events(EventMask.BUTTON_PRESS_MASK);
 
 			build_indicator();
 
@@ -172,6 +174,7 @@ namespace EPick {
 		protected void open() {
 			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
 			if (settings.get_boolean("grab-mouse-pointer")){
+				debug ("Grabbing mouse");
 				this.mouse.grab(this.window, Gdk.GrabOwnership.APPLICATION, false, EventMask.ALL_EVENTS_MASK, crosshair, Gdk.CURRENT_TIME);
 			}
 			this.show_all();
@@ -222,6 +225,7 @@ namespace EPick {
 		}
 */		
 		protected void pick() {
+			debug ("PICK");
 			clipboard.set_text(color_string, -1);
 			add_to_palette();
 		}
@@ -295,7 +299,7 @@ namespace EPick {
 			preview.queue_draw();
 
 			// Move window (track mouse position)
-			int x, y, posX, posY, offset = 30;
+			int x, y, posX, posY, offset = 10;
 
 			window.get_device_position(mouse, out x, out y, null);
 			posX = x + offset;
@@ -316,6 +320,7 @@ namespace EPick {
 			}
 */
 		}
+
 
 		static int main(string[] args){
 			Gtk.init(ref args);

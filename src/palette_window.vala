@@ -7,13 +7,13 @@ namespace EPick {
 
 		protected TreeView tv;
 
-		public ListStore palette;
+		public Gtk.ListStore palette;
 
 		public PaletteWindow () {
 
 			Box vbox = new Box(Orientation.VERTICAL, 0);
 
-			palette = new ListStore(3, typeof(Gdk.Pixbuf), typeof(string), typeof(string));
+			palette = new Gtk.ListStore(3, typeof(Gdk.Pixbuf), typeof(string), typeof(string));
 			tv = new TreeView.with_model(palette);
 
 			CellRendererPixbuf cr_pixbuf = new CellRendererPixbuf();

@@ -11,7 +11,7 @@
  * 		internal: RGB as Integer
  * 		methods to in- and output from/ to "hex", "rgb(r,g,b)", RGBA32 RGBA 8-bit, XColorName
  * 		Maybe extend Gdk.RGBA
- */ 
+ */
 using Gtk;
 using Gdk;
 using AppIndicator;
@@ -320,6 +320,12 @@ namespace EPick {
 		static int main(string[] args){
 			Gtk.init(ref args);
 			var app = new EPick();
+
+			var color = new Epick.Color.from_string(args[0]);
+			print ("%s %s\n", args[0], color.to_string(Epick.Color.SpecType.HEX6));
+
+			return 0;
+
 
 			if (!app.settings.get_boolean("start-in-systray")){
 				app.open();

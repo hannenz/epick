@@ -71,7 +71,7 @@ namespace EPick {
 			);
 			this.key_press_event.connect( (event_key) => {
 
-				debug ("Key: %^u".printf(event_key.keyval));
+				debug ("Key: %u".printf(event_key.keyval));
 
 				switch (event_key.keyval){
 					case 32:
@@ -87,7 +87,7 @@ namespace EPick {
 			});
 
 			this.button_press_event.connect( () => {
-				stdout.printf("Button\n");
+				debug ("Button\n");
 				return false;
 			});
 
@@ -116,6 +116,14 @@ namespace EPick {
 			settings_dialog = new SettingsDialog(settings);
 
 			palette_window  = new PaletteWindow();
+
+			current_color = RGBA(){red=0.5,green=0.5,blue=0.5,alpha=1.0};
+			color_string = "rgb(128, 128, 128)";
+
+			palette_window.pick_button.clicked.connect(open);
+			palette_window.show_all();
+
+			add_to_palette();
 		}
 
 		protected void build_indicator() {
@@ -189,7 +197,7 @@ namespace EPick {
 			 */
 
 			TreeIter iter;
-			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 24);
+			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
 			uint32 _col = 
 				(0xFF << 0) +
 				((uint32)(current_color.blue  * 256) << 8) +
@@ -200,10 +208,13 @@ namespace EPick {
 
 			pixbuf.fill(_col);
 
+			var color = new Epick.Color(current_color.red, current_color.green, current_color.blue);
+
 			palette_window.palette.append(out iter);
 			palette_window.palette.set(iter, 0, pixbuf);
 			palette_window.palette.set(iter, 1, color_string);
-			palette_window.palette.set(iter, 2, "Unknown color");
+			palette_window.palette.set(iter, 2, color.to_x11name());
+			palette_window.palette.set(iter, 3, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color_string));
 
 
 			Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);

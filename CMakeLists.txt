@@ -22,7 +22,7 @@ set (GETTEXT_PACKAGE "epick")
 find_package(PkgConfig)
 
 # now let's actually check for the required dependencies
-pkg_check_modules(DEPS REQUIRED gtk+-3.0 granite appindicator3-0.1)
+pkg_check_modules(DEPS REQUIRED gtk+-3.0 granite appindicator3-0.1 gee-0.8)
 add_definitions(${DEPS_CFLAGS})
 add_definitions(-DGETTEXT_PACKAGE=\"${GETTEXT_PACKAGE}\")
 link_libraries(${DEPS_LIBRARIES})
@@ -49,6 +49,7 @@ PACKAGES
 	granite
 	appindicator3-0.1
 	posix
+	gee-0.8
 OPTIONS
 	-X -DGETTEXT_PACKAGE="epick"
 )

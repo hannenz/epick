@@ -27,6 +27,7 @@ namespace EPick {
 			header_bar.set_show_close_button(true);
 			header_bar.pack_start(pick_button);
 
+
 			var nb = new Notebook();
 			nb.page_added.connect(() => {
 				nb.set_show_tabs(nb.get_n_pages() > 1);

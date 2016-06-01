@@ -39,7 +39,7 @@ namespace EPick {
 
 		protected string color_string;
 
-		protected RGBA current_color;
+		protected Epick.Color current_color;
 
 		protected Clipboard clipboard;
 
@@ -50,7 +50,7 @@ namespace EPick {
 		protected PaletteWindow palette_window;
 
 		// Constants 
-		protected const int previewSize = 300;
+		protected const int previewSize = 150;
 		protected const double previewScale = 4;
 
 		/**
@@ -109,7 +109,7 @@ namespace EPick {
 			build_indicator();
 
 			color_format = settings.get_string("color-format") == "hex" ? 0 : 1;
-			current_color = RGBA(){
+			current_color = Epick.Color(){
 				alpha = 1.0
 			};
 
@@ -238,7 +238,6 @@ namespace EPick {
 			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
 			pixbuf.fill(_col);
 
-			var color = new Epick.Color(current_color.red, current_color.green, current_color.blue);
 
 			TreeIter iter;
 			palette_window.palette.append(out iter);
@@ -246,8 +245,8 @@ namespace EPick {
 				iter,
 				0, pixbuf,
 				1, color_string,
-				2, color.to_x11name(),
-				3, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color_string),
+				2, current_color.to_x11name(),
+				3, "<b>%s</b>\n<small>%s</small>".printf(current_color.to_x11name(), color_string),
 				4, _col
 			);
 
@@ -359,7 +358,8 @@ namespace EPick {
 
 			this.move(posX, posY);
 
-/*			Gdk.Event event = display.get_event();
+/*
+			Gdk.Event event = display.get_event();
 			if (event != null && event.type == EventType.BUTTON_PRESS){
 				stdout.printf("click\n");
 			}
@@ -368,23 +368,30 @@ namespace EPick {
 
 		public void load_palettes() {
 
-			string homedir = Environment.get_home_dir();
 			string palettes_dir = GLib.Path.build_path("/", Environment.get_home_dir(), ".palettes");
 
-			string palette_default = GLib.Path.build_path("/", palettes_dir, "1.default");
-
-			debug (palette_default);
-
-			var file = File.new_for_path(palette_default);
-
 			try {
-				var dis = new DataInputStream(file.read());
-				string line;
+				var dir = File.new_for_path(palettes_dir);
+				var enumerator = dir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 
-				while ((line = dis.read_line(null)) != null) {
+				FileInfo file_info;
+				while ((file_info = enumerator.next_file()) != null) {
 
-					if (current_color.parse(line)) {
-						add_to_palette();
+					string file_path = GLib.Path.build_path("/", palettes_dir, file_info.get_name());
+
+					debug ("Loading palette: %s".printf(file_path));
+
+					var file = File.new_for_path(file_path);
+					var dis = new DataInputStream(file.read());
+					string line;
+
+					while ((line = dis.read_line(null)) != null) {
+
+						debug (line);
+
+						if (current_color.parse(line)) {
+							add_to_palette();
+						}
 					}
 				}
 			}
@@ -397,12 +404,6 @@ namespace EPick {
 		static int main(string[] args){
 			Gtk.init(ref args);
 			var app = new EPick();
-
-			var color = new Epick.Color.from_string(args[0]);
-			print ("%s %s\n", args[0], color.to_string(Epick.Color.SpecType.HEX6));
-
-			return 0;
-
 
 			if (!app.settings.get_boolean("start-in-systray")){
 				app.open_picker();

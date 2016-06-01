@@ -37,10 +37,8 @@ namespace EPick {
 
 			nb.append_page(sw, new Label("Default"));
 
-
-
 			set_titlebar(header_bar);
-			set_default_size(120, 400);
+			set_default_size(120, 600);
 
 			vbox.pack_start(header_bar);
 			vbox.pack_start(nb);

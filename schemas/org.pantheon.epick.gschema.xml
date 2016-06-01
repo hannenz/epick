@@ -2,6 +2,10 @@
 <schemalist>
 	<schema id="org.pantheon.epick" path="/org/pantheon/epick/">
 		<key type="s" name="color-format">
+			<choices>
+				<choice value="hex" />
+				<choice value="rgb" />
+			</choices>
 			<default>"hex"</default>
 			<summary>ePick color format</summary>
 			<description>Set to "hex" or "rgb"</description>
@@ -21,5 +25,16 @@
 			<summary>Grab mouse pointer</summary>
 			<description>If true, epick will grab the mouse pointer during color picking and thus block the GUI</description>
 		</key>
+
+		<key type="s" name="view-mode">
+			<choices>
+				<choice value="List" />
+				<choice value="Grid" />
+			</choices>
+			<default>"List"</default>
+			<summary>View mode</summary>
+			<description></description>
+		</key>
+
 	</schema>
 </schemalist>

@@ -16,11 +16,10 @@ using Gtk;
 using Gdk;
 using AppIndicator;
 using Cairo;
-using Granite;
 
 namespace EPick {
 
-	class EPick : Granite.Widgets.CompositedWindow {
+	class EPick : Gtk.Window {
 
 		public GLib.Settings settings;
 
@@ -123,7 +122,29 @@ namespace EPick {
 			palette_window.pick_button.clicked.connect(open);
 			palette_window.show_all();
 
+			settings.changed["view-mode"].connect(set_view_mode);
+			set_view_mode();
+
+			// Insert fake data
 			add_to_palette();
+			current_color.red = 214.0 / 256.0; current_color.green = 0.0 / 256.0; current_color.blue = 95.0 / 256.0;
+			add_to_palette();
+			current_color.red = 0.0 / 256.0; current_color.green = 134.0 / 256.0; current_color.blue = 174.0 / 256.0;
+			add_to_palette();
+		}
+
+		/**
+		 * Set the palette window's view mode (list or grid)
+		 * according to the current settings
+		 */
+		protected void set_view_mode() {
+			string view_mode = settings.get_string("view-mode");
+			if (view_mode == "List") {
+				palette_window.switch_to_list();
+			}
+			else if (view_mode == "Grid") {
+				palette_window.switch_to_grid();
+			}
 		}
 
 		protected void build_indicator() {
@@ -189,15 +210,10 @@ namespace EPick {
 		}
 
 		protected void add_to_palette() {
-			//palette.append(color);
-
 			/**
 			 * TODO: Don"t add doublettes!
-			 * TODO: Lookup color names
 			 */
 
-			TreeIter iter;
-			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
 			uint32 _col = 
 				(0xFF << 0) +
 				((uint32)(current_color.blue  * 256) << 8) +
@@ -205,16 +221,38 @@ namespace EPick {
 				((uint32)(current_color.red   * 256) << 24) +
 				0
 			;
+			
+			bool is_doublette = false;
+			palette_window.palette.foreach( (model, path, iter) => {
 
+				uint32 _col2;
+
+				model.get(iter, 4, out _col2);
+				if (_col == _col2) {
+					is_doublette = true;
+					debug ("Won't add, since %s is already in palette", color_string);
+					return true; // stop iterating
+				}
+
+				return false; // continue
+			});
+
+			if (is_doublette) {
+				return;
+			}
+
+			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
 			pixbuf.fill(_col);
 
 			var color = new Epick.Color(current_color.red, current_color.green, current_color.blue);
 
+			TreeIter iter;
 			palette_window.palette.append(out iter);
 			palette_window.palette.set(iter, 0, pixbuf);
 			palette_window.palette.set(iter, 1, color_string);
 			palette_window.palette.set(iter, 2, color.to_x11name());
 			palette_window.palette.set(iter, 3, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color_string));
+			palette_window.palette.set(iter, 4, _col);
 
 
 			Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);

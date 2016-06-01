@@ -16,11 +16,10 @@ using Gtk;
 using Gdk;
 using AppIndicator;
 using Cairo;
-using Granite;
 
 namespace EPick {
 
-	class EPick : Granite.Widgets.CompositedWindow {
+	class EPick : Gtk.Window {
 
 		public GLib.Settings settings;
 
@@ -51,7 +50,7 @@ namespace EPick {
 		protected PaletteWindow palette_window;
 
 		// Constants 
-		protected const int previewSize = 150;
+		protected const int previewSize = 300;
 		protected const double previewScale = 4;
 
 		/**
@@ -71,7 +70,7 @@ namespace EPick {
 			);
 			this.key_press_event.connect( (event_key) => {
 
-				debug ("Key: %^u".printf(event_key.keyval));
+				debug ("Key: %u".printf(event_key.keyval));
 
 				switch (event_key.keyval){
 					case 32:
@@ -79,7 +78,7 @@ namespace EPick {
 						break;
 
 					default:
-						close();
+						close_picker ();
 						break;
 
 				}
@@ -87,7 +86,7 @@ namespace EPick {
 			});
 
 			this.button_press_event.connect( () => {
-				stdout.printf("Button\n");
+				debug ("Button\n");
 				return false;
 			});
 
@@ -101,6 +100,9 @@ namespace EPick {
 			display = Display.get_default();
 			manager = display.get_device_manager();
 			mouse = manager.get_client_pointer();
+			if (mouse == null) {
+				error("Could not get device (mouse)");
+			}
 
 			window.set_events(EventMask.BUTTON_PRESS_MASK);
 
@@ -116,6 +118,31 @@ namespace EPick {
 			settings_dialog = new SettingsDialog(settings);
 
 			palette_window  = new PaletteWindow();
+
+			// current_color = RGBA(){red=0.5,green=0.5,blue=0.5,alpha=1.0};
+			// color_string = "rgb(128, 128, 128)";
+
+			palette_window.pick_button.clicked.connect(open_picker);
+			palette_window.show_all();
+
+			settings.changed["view-mode"].connect(set_view_mode);
+			set_view_mode();
+
+			load_palettes();
+		}
+
+		/**
+		 * Set the palette window's view mode (list or grid)
+		 * according to the current settings
+		 */
+		protected void set_view_mode() {
+			string view_mode = settings.get_string("view-mode");
+			if (view_mode == "List") {
+				palette_window.switch_to_list();
+			}
+			else if (view_mode == "Grid") {
+				palette_window.switch_to_grid();
+			}
 		}
 
 		protected void build_indicator() {
@@ -129,7 +156,7 @@ namespace EPick {
 			Gtk.MenuItem item;
 
 			item = new Gtk.MenuItem.with_label("Pick color");
-			item.activate.connect(open);
+			item.activate.connect(open_picker);
 			menu.append(item);
 
 			item = new Gtk.MenuItem.with_label("Settings");
@@ -159,7 +186,7 @@ namespace EPick {
 			Gtk.main_quit();
 		}
 
-		protected void close() {
+		protected void close_picker () {
 			if (settings.get_boolean("grab-mouse-pointer")){
 				this.mouse.ungrab(Gdk.CURRENT_TIME);
 			}
@@ -171,7 +198,7 @@ namespace EPick {
 			}
 		}
 
-		protected void open() {
+		protected void open_picker () {
 			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
 			if (settings.get_boolean("grab-mouse-pointer")){
 				debug ("Grabbing mouse");
@@ -181,15 +208,7 @@ namespace EPick {
 		}
 
 		protected void add_to_palette() {
-			//palette.append(color);
 
-			/**
-			 * TODO: Don"t add doublettes!
-			 * TODO: Lookup color names
-			 */
-
-			TreeIter iter;
-			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 24);
 			uint32 _col = 
 				(0xFF << 0) +
 				((uint32)(current_color.blue  * 256) << 8) +
@@ -197,14 +216,40 @@ namespace EPick {
 				((uint32)(current_color.red   * 256) << 24) +
 				0
 			;
+			
+			bool is_doublette = false;
+			palette_window.palette.foreach( (model, path, iter) => {
 
+				uint32 _col2;
+
+				model.get(iter, 4, out _col2);
+				if (_col == _col2) {
+					is_doublette = true;
+					debug ("Won't add, since %s is already in palette", color_string);
+					return true; // stop iterating
+				}
+				return false; // continue
+			});
+
+			if (is_doublette) {
+				return;
+			}
+
+			Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
 			pixbuf.fill(_col);
 
-			palette_window.palette.append(out iter);
-			palette_window.palette.set(iter, 0, pixbuf);
-			palette_window.palette.set(iter, 1, color_string);
-			palette_window.palette.set(iter, 2, "Unknown color");
+			var color = new Epick.Color(current_color.red, current_color.green, current_color.blue);
 
+			TreeIter iter;
+			palette_window.palette.append(out iter);
+			palette_window.palette.set(
+				iter,
+				0, pixbuf,
+				1, color_string,
+				2, color.to_x11name(),
+				3, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color_string),
+				4, _col
+			);
 
 			Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);
 
@@ -321,6 +366,33 @@ namespace EPick {
 */
 		}
 
+		public void load_palettes() {
+
+			string homedir = Environment.get_home_dir();
+			string palettes_dir = GLib.Path.build_path("/", Environment.get_home_dir(), ".palettes");
+
+			string palette_default = GLib.Path.build_path("/", palettes_dir, "1.default");
+
+			debug (palette_default);
+
+			var file = File.new_for_path(palette_default);
+
+			try {
+				var dis = new DataInputStream(file.read());
+				string line;
+
+				while ((line = dis.read_line(null)) != null) {
+
+					if (current_color.parse(line)) {
+						add_to_palette();
+					}
+				}
+			}
+			catch (Error e) {
+				error ("Error: " + e.message);
+			}
+		}
+
 
 		static int main(string[] args){
 			Gtk.init(ref args);
@@ -333,7 +405,7 @@ namespace EPick {
 
 
 			if (!app.settings.get_boolean("start-in-systray")){
-				app.open();
+				app.open_picker();
 			}
 
 			Idle.add( () => {

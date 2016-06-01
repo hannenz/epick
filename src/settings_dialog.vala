@@ -49,6 +49,15 @@ namespace EPick {
 				});
 			content.pack_start(color_format_cb, false, false, 0);
 
+			var view_mode_cb = new ComboBoxText();
+			view_mode_cb.append_text("List");
+			view_mode_cb.append_text("Grid");
+			view_mode_cb.active = settings.get_string("view-mode") == "List" ? 0 :1;
+			view_mode_cb.changed.connect( () => {
+					settings.set_string("view-mode", view_mode_cb.get_active_text());
+				});
+			content.pack_start(view_mode_cb, false, false, 0);
+
 			add_button("_Close", Gtk.ResponseType.CLOSE);
 		}
 

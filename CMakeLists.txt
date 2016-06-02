@@ -41,9 +41,11 @@ ensure_vala_version("0.16" MINIMUM)
 include(ValaPrecompile)
 vala_precompile(VALA_C ${EXEC_NAME}
 	src/epick.vala
+	src/picker_window.vala
 	src/settings_dialog.vala
 	src/palette_window.vala
 	src/color.vala
+	src/palette.vala
 PACKAGES
 	gtk+-3.0
 	
@@ -79,4 +81,4 @@ install (
 
 #install schema
 include(GSettings)
-add_schema("schemas/org.pantheon.epick.gschema.xml")
+add_schema("schemas/de.hannenz.epick.gschema.xml")

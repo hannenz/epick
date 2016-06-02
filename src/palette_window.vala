@@ -1,9 +1,9 @@
 using Gtk;
 using Gdk;
 
-namespace EPick {
+namespace Epick {
 
-	class PaletteWindow : Gtk.Window {
+	class PaletteWindow : Gtk.ApplicationWindow {
 
 		protected TreeView tv;
 
@@ -15,7 +15,14 @@ namespace EPick {
 
 		public Gtk.Button pick_button;
 
-		public PaletteWindow () {
+
+
+
+		public PaletteWindow (Gtk.Application app) {
+
+			GLib.Object(application: app);
+
+
 
 			Box vbox = new Box(Orientation.VERTICAL, 0);
 			sw = new ScrolledWindow(null, null);
@@ -75,6 +82,7 @@ namespace EPick {
 			tv.insert_column_with_attributes(-1, "Name", cr_text, "markup", 3);
 
 			this.add(vbox);
+			this.show_all();
 		}
 
 		public void switch_to_grid() {

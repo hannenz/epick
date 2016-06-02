@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-	<schema id="org.pantheon.epick" path="/org/pantheon/epick/">
+	<schema id="de.hannenz.epick" path="/de/hannenz/epick/">
 		<key type="s" name="color-format">
 			<choices>
 				<choice value="hex" />

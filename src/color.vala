@@ -19,10 +19,33 @@ namespace Epick {
 
 		public Color() {
 
-
 			populate_x11names();
 
 			alpha = 1.0;
+		}
+
+
+
+		/**
+		 * Return a square pixbuf filled with the solid color
+		 *
+		 * @param size in pixel
+		 * @return Gdk.Pixbuf
+		 */
+		public Pixbuf get_pixbuf(int size = 48) {
+
+			uint32 _col = 
+				(0xFF << 0) +
+				((uint32)(blue  * 256) << 8) +
+				((uint32)(green * 256) << 16) +
+				((uint32)(red   * 256) << 24) +
+				0
+			;
+
+			Pixbuf pb = new Pixbuf(Gdk.Colorspace.RGB, false, 8, size, size);
+			pb.fill(_col);
+
+			return pb;
 		}
 
 

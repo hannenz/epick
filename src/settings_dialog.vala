@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace EPick {
+namespace Epick {
 
 	class SettingsDialog : Gtk.Dialog {
 

@@ -21,15 +21,17 @@ namespace Epick {
 			RED_COLUMN,
 			GREEN_COLUMN,
 			BLUE_COLUMN,
+			MARKUP_COLUMN,
 			N_COLUMNS
 		}
 
 
-		protected string name;
+		public string name;
+
+		public Gtk.ListStore list_store;
 
 		protected File file;
 
-		protected Gtk.ListStore list_store;
 
 
 
@@ -48,7 +50,8 @@ namespace Epick {
 				typeof(string),
 				typeof(double),
 				typeof(double),
-				typeof(double)
+				typeof(double),
+				typeof(string)
 			);
 
 			load ();
@@ -70,7 +73,8 @@ namespace Epick {
 				PaletteColumn.X11_NAME_COLUMN, color.to_x11name(),
 				PaletteColumn.RED_COLUMN, color.red,
 				PaletteColumn.GREEN_COLUMN, color.green,
-				PaletteColumn.BLUE_COLUMN, color.blue
+				PaletteColumn.BLUE_COLUMN, color.blue,
+				PaletteColumn.MARKUP_COLUMN, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color.to_string())
 			);
 
 		}

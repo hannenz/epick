@@ -82,6 +82,53 @@ namespace Epick {
 
 
 
+		public override void startup() {
+
+			base.startup();
+
+			debug ("startup");
+
+			string ui =	"""
+		 		<interface>
+			 		<menu id='appmenu'>
+					    <section>
+					      <item>
+					        <attribute name='label' translatable='yes'>_Preferences</attribute>
+					        <attribute name='action'>app.preferences</attribute>
+					      </item>
+					    </section>
+					    <section>
+					      <item>
+					        <attribute name='label' translatable='yes'>_Quit</attribute>
+					        <attribute name='action'>app.quit</attribute>
+					      </item>
+					    </section>
+					  </menu>
+					</interface>
+		 	""";
+
+			var action = new GLib.SimpleAction("preferences", null);
+			action.activate.connect(preferences);
+			add_action(action);
+
+			action = new GLib.SimpleAction("quit", null);
+			action.activate.connect(quit);
+			add_action(action);
+			add_accelerator("<Ctrl>Q", "app.quit", null);
+
+			action = new GLib.SimpleAction("pick", null);
+			action.activate.connect(pick);
+			add_accelerator("<Ctrl>P", "app.pick", null);
+			add_action(action);
+
+		 	var builder = new Gtk.Builder.from_string(ui, -1);
+		 	var menu = builder.get_object("appmenu") as GLib.MenuModel;
+			set_app_menu(menu);
+		}
+
+
+
+
 		/**
 		 * Set the palette window's view mode (list or grid)
 		 * according to the current settings
@@ -96,6 +143,30 @@ namespace Epick {
 			}
 		}
 
+
+
+
+		public void pick() {
+
+			var picker_window = new PickerWindow();
+			picker_window.present();
+
+		}
+
+
+		protected void preferences() {
+
+			debug ("Preferences");
+
+			var settings_dialog = new SettingsDialog(settings);
+			settings_dialog.show_all();
+			settings_dialog.run();
+		}
+
+
+		protected new void quit() {
+			Gtk.main_quit();
+		}
 
 
 
@@ -170,7 +241,11 @@ namespace Epick {
 
 					debug ("Loading palette: %s".printf(file_path));
 
-					palettes.append(new Palette(file_info.get_name(), file_path));
+					var palette = new Palette(file_info.get_name(), file_path);
+
+					palettes.append(palette);
+
+					palette_window.add_page(palette);
 
 				}
 			}

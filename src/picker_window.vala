@@ -52,8 +52,6 @@ namespace Epick {
 		public PickerWindow() {
 
 
-			this.destroy.connect(main_quit);
-
 			this.add_events(
 				EventMask.KEY_PRESS_MASK |
 				EventMask.BUTTON_PRESS_MASK
@@ -102,6 +100,8 @@ namespace Epick {
 				pick_color();
 				return true;
 			});
+
+			this.show_all();
 
 		}
 

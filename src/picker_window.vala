@@ -39,6 +39,7 @@ namespace Epick {
 
 		protected Clipboard clipboard;
 
+		protected Epick app;
 
 		// Constants 
 		protected const int previewSize = 150;
@@ -47,9 +48,11 @@ namespace Epick {
 		/**
 		 * Constructor
 		 *
-		 * Build GUI
+		 * Build GUI	
 		 */
-		public PickerWindow() {
+		public PickerWindow(Epick app) {
+
+			this.app = app;
 
 
 			this.add_events(
@@ -108,7 +111,7 @@ namespace Epick {
 
 		protected void close_picker () {
 			// if (settings.get_boolean("grab-mouse-pointer")){
-			// 	this.mouse.ungrab(Gdk.CURRENT_TIME);
+				this.mouse.ungrab(Gdk.CURRENT_TIME);
 			// }
 			// if (settings.get_boolean("close-to-systray")){
 				this.hide();
@@ -118,7 +121,7 @@ namespace Epick {
 			// }
 		}
 
-		protected void open_picker () {
+		public void open_picker () {
 			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
 			// if (settings.get_boolean("grab-mouse-pointer")){
 			// 	debug ("Grabbing mouse");
@@ -188,11 +191,21 @@ namespace Epick {
 			this.hide();
 		}
 */		
+		
+
 		protected void pick() {
 			debug ("PICK");
 			clipboard.set_text(color_string, -1);
 			add_to_palette();
+
+			unowned List<Palette> elem = this.app.palettes.nth(this.app.current_palette);
+			Palette palette = elem.data;
+			palette.add_color(current_color);
+
+
 		}
+
+
 
 		private bool on_draw(Context ctx) {
 			int x, y;

@@ -25,9 +25,6 @@ namespace Epick {
 
 
 
-
-
-
 		public GLib.Settings settings;
 
 		private PaletteWindow palette_window;
@@ -36,7 +33,9 @@ namespace Epick {
 
 		private SettingsDialog settings_dialog;
 
-		private List<Palette> palettes;
+		public List<Palette> palettes;
+
+		public uint current_palette;
 
 		// protected AppIndicator.Indicator indicator;
 
@@ -69,7 +68,7 @@ namespace Epick {
 			settings.changed["view-mode"].connect(set_view_mode);
 			set_view_mode();
 
-			picker_window = new PickerWindow();
+			picker_window = new PickerWindow(this);
 
 			settings_dialog = new SettingsDialog(settings);
 
@@ -148,8 +147,9 @@ namespace Epick {
 
 		public void pick() {
 
-			var picker_window = new PickerWindow();
+			var picker_window = new PickerWindow(this);
 			picker_window.present();
+			picker_window.open_picker();
 
 		}
 
@@ -232,9 +232,16 @@ namespace Epick {
 
 			try {
 				var dir = File.new_for_path(palettes_dir);
+				if (!FileUtils.test(palettes_dir, FileTest.EXISTS)) {
+
+					debug (".palettes dir (%s) does not exist, creating it now.".printf(palettes_dir));
+					dir.make_directory();
+
+				}
 				var enumerator = dir.enumerate_children(FileAttribute.STANDARD_NAME, 0);
 
 				FileInfo file_info;
+				int n = 0;
 				while ((file_info = enumerator.next_file()) != null) {
 
 					string file_path = GLib.Path.build_path("/", palettes_dir, file_info.get_name());
@@ -245,8 +252,14 @@ namespace Epick {
 
 					palettes.append(palette);
 
-					palette_window.add_page(palette);
+					palette_window.add_palette(palette);
+					n++;
+				}
 
+				if (n == 0) {
+					var palette = new Palette("Default", null);
+					palettes.append(palette);
+					palette_window.add_palette(palette);
 				}
 			}
 			catch (Error e) {

@@ -35,11 +35,9 @@ namespace Epick {
 
 
 
-		public Palette(string name, string filename) {
+		public Palette(string name, string? filename) {
 
 			this.name = name;
-
-			this.file = File.new_for_path(filename);
 
 			this.list_store = new Gtk.ListStore(
 				PaletteColumn.N_COLUMNS,
@@ -53,8 +51,12 @@ namespace Epick {
 				typeof(double),
 				typeof(string)
 			);
+			
+			if (filename != null) {
+				this.file = File.new_for_path(filename);
+				load ();
+			}
 
-			load ();
 		}
 
 

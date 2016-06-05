@@ -8,7 +8,7 @@ namespace Epick {
 
 		public Gtk.Button pick_button;
 
-		protected Gtk.Notebook notebook;
+		private Gtk.Notebook notebook;
 
 
 
@@ -18,6 +18,10 @@ namespace Epick {
 
 			GLib.Object(application: app);
 
+
+			this.destroy.connect(() => {
+					Gtk.main_quit();
+				});
 
 			Box vbox = new Box(Orientation.VERTICAL, 0);
 
@@ -36,11 +40,18 @@ namespace Epick {
 
 
 			notebook = new Notebook();
-			notebook.page_added.connect(() => {
-				notebook.set_show_tabs(notebook.get_n_pages() > 1);
-			});
-			notebook.page_removed.connect(() => {
-				notebook.set_show_tabs(notebook.get_n_pages() > 1);
+			// notebook.page_added.connect(() => {
+			// 	notebook.set_show_tabs(notebook.get_n_pages() > 1);
+			// });
+			// notebook.page_removed.connect(() => {
+			// 	notebook.set_show_tabs(notebook.get_n_pages() > 1);
+			// });
+
+			notebook.switch_page.connect( (page, index) => {
+				debug ("Page has changed to: %u".printf(index));
+
+				var _app = this.application as Epick;
+				_app.current_palette = index;
 			});
 
 			set_titlebar(header_bar);
@@ -53,7 +64,7 @@ namespace Epick {
 			this.show_all();
 		}
 
-		public void add_page(Palette palette) {
+		public void add_palette(Palette palette) {
 			
 			var tv = create_tree_view();
 			tv.set_model(palette.list_store);

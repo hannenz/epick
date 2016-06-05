@@ -20,7 +20,8 @@ namespace Epick {
 
 
 			this.destroy.connect(() => {
-					Gtk.main_quit();
+					this.application.quit();
+					//Gtk.main_quit();
 				});
 
 			Box vbox = new Box(Orientation.VERTICAL, 0);

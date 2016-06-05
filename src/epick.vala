@@ -68,7 +68,7 @@ namespace Epick {
 			settings.changed["view-mode"].connect(set_view_mode);
 			set_view_mode();
 
-			picker_window = new PickerWindow(this);
+//			picker_window = new PickerWindow(this);
 
 			settings_dialog = new SettingsDialog(settings);
 
@@ -164,9 +164,6 @@ namespace Epick {
 		}
 
 
-		protected new void quit() {
-			Gtk.main_quit();
-		}
 
 
 
@@ -275,15 +272,8 @@ namespace Epick {
 			Gtk.init(ref args);
 			var app = new Epick();
 
-			// if (!app.settings.get_boolean("start-in-systray")){
-			// 	app.picker_window.open_picker();
-			// }
+			return app.run();
 
-			app.run();
-
-
-			Gtk.main();
-			return 0;
  		}
 	}
 }

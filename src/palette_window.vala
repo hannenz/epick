@@ -16,12 +16,12 @@ namespace Epick {
 
 		public PaletteWindow (Gtk.Application app) {
 
-			GLib.Object(application: app);
+			GLib.Object(application: app, type: Gtk.WindowType.TOPLEVEL);
 
 
-			this.destroy.connect(() => {
-					this.application.quit();
-					//Gtk.main_quit();
+			this.delete_event.connect(() => {
+					this.application.activate_action("app.quit", null);
+					return false;
 				});
 
 			Box vbox = new Box(Orientation.VERTICAL, 0);
@@ -41,19 +41,36 @@ namespace Epick {
 
 
 			notebook = new Notebook();
-			// notebook.page_added.connect(() => {
-			// 	notebook.set_show_tabs(notebook.get_n_pages() > 1);
-			// });
-			// notebook.page_removed.connect(() => {
-			// 	notebook.set_show_tabs(notebook.get_n_pages() > 1);
-			// });
+			notebook.page_added.connect(() => {
+				notebook.set_show_tabs(notebook.get_n_pages() > 1);
+			});
+			notebook.page_removed.connect(() => {
+				notebook.set_show_tabs(notebook.get_n_pages() > 1);
+			});
+
+			notebook.popup_enable();
 
 			notebook.switch_page.connect( (page, index) => {
-				debug ("Page has changed to: %u".printf(index));
-
 				var _app = this.application as Epick;
 				_app.current_palette = index;
 			});
+
+			notebook.page_removed.connect( (page, index) => {
+
+				debug ("Removing page %u".printf(index));
+
+				var _app = this.application as Epick;
+				debug ("We have %u palettes at the moment", _app.palettes.length());
+
+				Palette palette = _app.palettes.nth_data(index);
+
+				palette.save();
+
+				_app.palettes.remove(palette);
+
+			});
+
+
 
 			set_titlebar(header_bar);
 			set_default_size(120, 600);
@@ -74,7 +91,38 @@ namespace Epick {
 			sw.add(tv);
 			sw.show_all();
 
-			notebook.append_page(sw, new Label(palette.name));
+			//notebook.append_page(sw, new Label(palette.name));
+
+			// Label with close button
+			var label = new Label(palette.name);
+
+			var img = new Image.from_icon_name(Gtk.Stock.CLOSE, Gtk.IconSize.MENU);
+
+			var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
+
+			var button = new Button();
+			button.set_relief(Gtk.ReliefStyle.NONE);
+			button.set_focus_on_click(false);
+			button.add(img);
+
+			var style = new Gtk.RcStyle();
+			style.xthickness = 0;
+			style.ythickness = 0;
+			button.modify_style(style);
+
+			hbox.pack_start(button);
+			hbox.pack_start(label);
+
+			hbox.show_all();
+
+			int p;
+			if ((p = notebook.append_page(sw, hbox)) != -1) {
+				notebook.set_current_page(p);
+			}
+
+			button.clicked.connect( () => {
+					notebook.remove_page(notebook.page_num(sw));
+				});
 		}
 
 

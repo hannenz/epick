@@ -90,6 +90,12 @@ namespace Epick {
 			string ui =	"""
 		 		<interface>
 			 		<menu id='appmenu'>
+			 			<section>
+			 				<item>
+			 					<attribute name='label' translatable='yes'>_New palette</attribute>
+			 					<attribute name='action'>app.new_palette</attribute>
+			 				</item>
+			 			</section>
 					    <section>
 					      <item>
 					        <attribute name='label' translatable='yes'>_Preferences</attribute>
@@ -106,7 +112,12 @@ namespace Epick {
 					</interface>
 		 	""";
 
-			var action = new GLib.SimpleAction("preferences", null);
+			var action = new GLib.SimpleAction("new_palette", null);
+			action.activate.connect(new_palette);
+			add_accelerator("<Ctrl>N", "app.new_palette", null);
+			add_action(action);
+
+			action = new GLib.SimpleAction("preferences", null);
 			action.activate.connect(preferences);
 			add_action(action);
 
@@ -164,6 +175,17 @@ namespace Epick {
 		}
 
 
+		protected void new_palette() {
+
+			debug ("New palette");
+
+			Palette palette = new Palette("New palette", null);
+
+			palettes.append(palette);
+
+			palette_window.add_palette(palette);
+
+		}
 
 
 

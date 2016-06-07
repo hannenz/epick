@@ -56,6 +56,15 @@ namespace Epick {
 				this.file = File.new_for_path(filename);
 				load ();
 			}
+			else {
+				int n = 0;
+				do {
+					filename = (n == 0) ? name : "%s %u".printf(name, n);
+					this.file = File.new_for_path(GLib.Path.build_path("/", Environment.get_home_dir(), ".palettes", filename));
+					n++;
+				}
+				while (file.query_exists());
+			}
 
 		}
 
@@ -124,6 +133,40 @@ namespace Epick {
 		}
 
 		public bool save() {
+
+			debug ("Saving to file: " + file.get_parse_name());
+
+			try {
+
+				if (file.query_exists()) {
+					file.delete();
+				}
+				var dos = new DataOutputStream(file.create(FileCreateFlags.REPLACE_DESTINATION));
+
+				list_store.foreach( (model, path, iter) => {
+					double red, green, blue;
+					model.get(iter,
+						Palette.PaletteColumn.RED_COLUMN, out red,
+						Palette.PaletteColumn.GREEN_COLUMN, out green,
+						Palette.PaletteColumn.BLUE_COLUMN, out blue,
+						-1
+					);
+					var color = new Color();
+					color.red = red;
+					color.green = green;
+					color.blue = blue;
+
+					dos.put_string(color.to_string() + "\n");
+
+					return false;
+				});
+			}
+			catch (Error e) {
+				warning ("Error: " + e.message);
+				return false;
+			}
+
+
 
 			return true;
 

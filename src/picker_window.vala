@@ -47,8 +47,6 @@ namespace Epick {
 
 		/**
 		 * Constructor
-		 *
-		 * Build GUI	
 		 */
 		public PickerWindow(Epick app) {
 
@@ -76,10 +74,6 @@ namespace Epick {
 				return false;
 			});
 
-			this.button_press_event.connect( () => {
-				debug ("Button\n");
-				return false;
-			});
 
 			preview = new Gtk.DrawingArea();
 			preview.set_size_request(previewSize, previewSize);
@@ -109,6 +103,27 @@ namespace Epick {
 		}
 
 
+
+
+		public void open_picker () {
+			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
+			// if (settings.get_boolean("grab-mouse-pointer")){
+			// 	debug ("Grabbing mouse");
+				this.mouse.grab(this.window, Gdk.GrabOwnership.APPLICATION, false, EventMask.ALL_EVENTS_MASK, crosshair, Gdk.CURRENT_TIME);
+			// }
+
+			this.button_press_event.connect( () => {
+				stdout.printf("A mouse button has been clicked\n");
+				debug ("Button\n");
+				return false;
+			});
+
+			this.show_all();
+		}
+
+
+
+
 		protected void close_picker () {
 			// if (settings.get_boolean("grab-mouse-pointer")){
 				this.mouse.ungrab(Gdk.CURRENT_TIME);
@@ -121,14 +136,6 @@ namespace Epick {
 			// }
 		}
 
-		public void open_picker () {
-			var crosshair = new Gdk.Cursor.for_display(display, Gdk.CursorType.CROSSHAIR);
-			// if (settings.get_boolean("grab-mouse-pointer")){
-			// 	debug ("Grabbing mouse");
-				this.mouse.grab(this.window, Gdk.GrabOwnership.APPLICATION, false, EventMask.ALL_EVENTS_MASK, crosshair, Gdk.CURRENT_TIME);
-			// }
-			this.show_all();
-		}
 
 		protected void add_to_palette() {
 
@@ -194,7 +201,7 @@ namespace Epick {
 		
 
 		protected void pick() {
-			debug ("PICK");
+
 			clipboard.set_text(color_string, -1);
 			add_to_palette();
 
@@ -274,6 +281,8 @@ namespace Epick {
 
 			// Update the preview
 			preview.queue_draw();
+
+			return;
 
 			// Move window (track mouse position)
 			int x, y, posX, posY, offset = 10;

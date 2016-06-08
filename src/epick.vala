@@ -179,12 +179,30 @@ namespace Epick {
 
 			debug ("New palette");
 
-			Palette palette = new Palette("New palette", null);
 
-			palettes.append(palette);
+			var entry = new Entry();
+			var dlg = new Gtk.Dialog.with_buttons("New palette", null, Gtk.DialogFlags.MODAL, 
+				"OK", Gtk.ResponseType.OK, 
+				"CANCEL", Gtk.ResponseType.CANCEL,
+				null
+			);
+			var content_area = dlg.get_content_area();
+			content_area.add(entry);
 
-			palette_window.add_palette(palette);
+			dlg.set_modal(true);
+			dlg.show_all();
+			var response = dlg.run();
+			if (response == Gtk.ResponseType.OK) {
 
+				string name = entry.get_text();
+				if (name.length > 0) {
+					Palette palette = new Palette(entry.get_text(), null);
+					palettes.append(palette);
+					palette_window.add_palette(palette);
+				}
+			}
+
+			dlg.destroy();
 		}
 
 

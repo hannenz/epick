@@ -93,13 +93,17 @@ namespace Epick {
 
 			clipboard = Gtk.Clipboard.get_for_display(display, Gdk.SELECTION_CLIPBOARD);
 
+			this.button_press_event.connect( (event) => {
+				debug ("Click on picker window");
+				return true;
+			});
+
 			Idle.add( () => {
 				pick_color();
 				return true;
 			});
 
 			this.show_all();
-
 		}
 
 
@@ -137,73 +141,11 @@ namespace Epick {
 		}
 
 
-		protected void add_to_palette() {
-
-			uint32 _col = 
-				(0xFF << 0) +
-				((uint32)(current_color.blue  * 256) << 8) +
-				((uint32)(current_color.green * 256) << 16) +
-				((uint32)(current_color.red   * 256) << 24) +
-				0
-			;
-			
-			// bool is_doublette = false;
-			// palette_window.palette.foreach( (model, path, iter) => {
-
-			// 	uint32 _col2;
-
-			// 	model.get(iter, 4, out _col2);
-			// 	if (_col == _col2) {
-			// 		is_doublette = true;
-			// 		debug ("Won't add, since %s is already in palette", color_string);
-			// 		return true; // stop iterating
-			// 	}
-			// 	return false; // continue
-			// });
-
-			// if (is_doublette) {
-			// 	return;
-			// }
-
-			// Pixbuf pixbuf = new Pixbuf(Gdk.Colorspace.RGB, false, 8, 48, 48);
-			// pixbuf.fill(_col);
-
-
-			// TreeIter iter;
-			// palette_window.palette.append(out iter);
-			// palette_window.palette.set(
-			// 	iter,
-			// 	0, pixbuf,
-			// 	1, color_string,
-			// 	2, current_color.to_x11name(),
-			// 	3, "<b>%s</b>\n<small>%s</small>".printf(current_color.to_x11name(), color_string),
-			// 	4, _col
-			// );
-
-			// Gtk.Image image = new Gtk.Image.from_pixbuf(pixbuf);
-
-			// Gtk.ImageMenuItem item = new Gtk.ImageMenuItem.with_label(color_string);
-			// item.set_image(image);
-			// item.activate.connect( () => {
-			// 		clipboard.set_text(item.get_label(), -1);
-			// 	});
-
-//			menu.append(item);
-			// menu.show_all();
-		}
-
-
-/*		protected void close() {
-			mouse.ungrab(Gdk.CURRENT_TIME);
-			this.hide();
-		}
-*/		
 		
 
 		protected void pick() {
 
 			clipboard.set_text(color_string, -1);
-			add_to_palette();
 
 			unowned List<Palette> elem = this.app.palettes.nth(this.app.current_palette);
 			Palette palette = elem.data;
@@ -282,10 +224,8 @@ namespace Epick {
 			// Update the preview
 			preview.queue_draw();
 
-			return;
-
 			// Move window (track mouse position)
-			int x, y, posX, posY, offset = 10;
+			int x, y, posX, posY, offset = 0;
 
 			window.get_device_position(mouse, out x, out y, null);
 			posX = x + offset;
@@ -298,14 +238,13 @@ namespace Epick {
 				posY = y - (offset + previewSize);
 			}
 
-			this.move(posX, posY);
+			// move(posX, posY);
 
-/*
-			Gdk.Event event = display.get_event();
-			if (event != null && event.type == EventType.BUTTON_PRESS){
-				stdout.printf("click\n");
-			}
-*/
+			// Gdk.Event event = display.get_event();
+			// if (event != null && event.type == EventType.BUTTON_PRESS){
+			// 	stdout.printf("click\n");
+			// }
+
 		}
 	}
 }

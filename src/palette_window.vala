@@ -6,12 +6,12 @@ namespace Epick {
 	class PaletteWindow : Gtk.ApplicationWindow {
 
 
-		public Gtk.Button pick_button;
+		public Gtk.ToolButton toggle_view_button;
 
 		private Gtk.Notebook notebook;
 
 
-
+		public signal void new_palette_button_clicked();
 
 
 		public PaletteWindow (Gtk.Application app) {
@@ -28,14 +28,45 @@ namespace Epick {
 
 			var header_bar = new HeaderBar();
 
-			pick_button = new Button.with_label("Pick");
+			var pick_button = new ToolButton(
+				new Gtk.Image.from_icon_name("color-select-symbolic", IconSize.SMALL_TOOLBAR),
+				_("Pick")
+			);
 			pick_button.clicked.connect( () => {
 
 					var epick = application as Epick;
 					epick.pick();
 
 				});
-			header_bar.set_title("epick");
+
+			Gtk.ToolButton btn;
+
+			btn = new Gtk.ToolButton(null, null);
+			btn.set_icon_name("document-new");
+			btn.clicked.connect( () => {
+					new_palette_button_clicked();
+				});
+			header_bar.pack_end(btn);
+
+			Gtk.Image icon;
+			var _app = this.application as Epick;
+			switch (_app.settings.get_string("view-mode")) {
+				case "Grid":
+					icon = new Gtk.Image.from_icon_name("view-list-symbolic", IconSize.SMALL_TOOLBAR);
+					break;
+				case "List":
+				default:
+					icon = new Gtk.Image.from_icon_name("view-grid-symbolic", IconSize.SMALL_TOOLBAR);
+					break;
+			}
+			toggle_view_button = new Gtk.ToolButton(icon, null);
+			toggle_view_button.clicked.connect(toggle_view_mode);
+			header_bar.pack_end(toggle_view_button);
+			// btn = new Gtk.ToolButton(new Gtk.Image.from_icon_name("view-list-symbolic", IconSize.SMALL_TOOLBAR), null);
+			// header_bar.pack_end(btn);
+
+
+			header_bar.set_title("Color Picker");
 			header_bar.set_show_close_button(true);
 			header_bar.pack_start(pick_button);
 
@@ -51,16 +82,12 @@ namespace Epick {
 			notebook.popup_enable();
 
 			notebook.switch_page.connect( (page, index) => {
-				var _app = this.application as Epick;
 				_app.current_palette = index;
 			});
 
 			notebook.page_removed.connect( (page, index) => {
 
 				debug ("Removing page %u".printf(index));
-
-				var _app = this.application as Epick;
-				debug ("We have %u palettes at the moment", _app.palettes.length());
 
 				Palette palette = _app.palettes.nth_data(index);
 
@@ -83,12 +110,26 @@ namespace Epick {
 		}
 
 		public void add_palette(Palette palette) {
-			
-			var tv = create_tree_view();
-			tv.set_model(palette.list_store);
 
 			var sw = new ScrolledWindow(null, null);
-			sw.add(tv);
+
+			var _app = this.application as Epick;
+			var view_mode = _app.settings.get_string("view-mode");
+			switch (view_mode) {
+
+				case "Grid":
+					var iv = create_icon_view();
+					iv.set_model(palette.list_store);
+					sw.add(iv);
+					break;
+				case "List":
+				default:
+					var tv = create_tree_view();
+					tv.set_model(palette.list_store);
+					sw.add(tv);
+					break;
+			}
+
 			sw.show_all();
 
 			//notebook.append_page(sw, new Label(palette.name));
@@ -96,7 +137,7 @@ namespace Epick {
 			// Label with close button
 			var label = new Label(palette.name);
 
-			var img = new Image.from_icon_name(Gtk.Stock.CLOSE, Gtk.IconSize.MENU);
+			var img = new Image.from_icon_name("dialog-close", Gtk.IconSize.MENU);
 
 			var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
 
@@ -125,6 +166,15 @@ namespace Epick {
 				});
 		}
 
+		/**
+		 * Remove the current page from the notebook
+		 */
+		public void remove_palette() {
+
+			notebook.remove_page(notebook.get_current_page());
+
+		}
+
 
 		private TreeView create_tree_view() {
 
@@ -142,6 +192,23 @@ namespace Epick {
 			var cr_text = new CellRendererText();
 			tv.insert_column_with_attributes(-1, "Name", cr_text, "markup", Palette.PaletteColumn.MARKUP_COLUMN);
 
+
+			tv.row_activated.connect( (tv, path, column) => {
+					debug ("The row has been activated");
+
+
+					var popover = new ActionPopover(tv);
+
+					// Get the cell area
+					Rectangle rect;
+					tv.get_cell_area(path, column, out rect);
+					popover.set_pointing_to(rect);
+
+					popover.show_all();
+
+				});
+
+
 			return tv;			
 		}
 
@@ -154,6 +221,22 @@ namespace Epick {
 			iv.set_reorderable(true);
 			iv.set_pixbuf_column(Palette.PaletteColumn.PIXBUF_COLUMN);
 			iv.set_markup_column(Palette.PaletteColumn.MARKUP_COLUMN);
+
+
+			iv.item_activated.connect( (path) => {
+
+				var popover = new ActionPopover(iv);
+
+				// Get the cell area
+				Rectangle rect;
+				iv.get_cell_rect(path, null, out rect);
+				popover.set_pointing_to(rect);
+
+				popover.show_all();
+			});
+
+
+
 
 			return iv;
 		}
@@ -194,5 +277,27 @@ namespace Epick {
 					tv.show();
 				});
 		}
+		protected void toggle_view_mode() {
+			var _app = this.application as Epick;
+			var view_mode = _app.settings.get_string("view-mode");
+			switch (view_mode) {
+				case "List":
+					switch_to_grid();
+					_app.settings.set_string("view-mode", "Grid");
+					toggle_view_button.set_icon_name("view-list-symbolic");
+					toggle_view_button.set_icon_widget(null);
+					// toggle_view_button.set_icon_widget(new Gtk.Image.from_icon_name("view-grid-symbolic", IconSize.SMALL_TOOLBAR));
+
+					break;
+				case "Grid":
+					switch_to_list();
+					_app.settings.set_string("view-mode", "List");
+					toggle_view_button.set_icon_name("view-grid-symbolic");
+					toggle_view_button.set_icon_widget(null);
+					break;
+
+			}
+		}
 	}
+
 }

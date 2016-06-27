@@ -46,6 +46,7 @@ vala_precompile(VALA_C ${EXEC_NAME}
 	src/palette_window.vala
 	src/color.vala
 	src/palette.vala
+	src/action_popover.vala
 PACKAGES
 	gtk+-3.0
 	

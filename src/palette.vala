@@ -54,7 +54,6 @@ namespace Epick {
 			
 			if (filename != null) {
 				this.file = File.new_for_path(filename);
-				load ();
 			}
 			else {
 				int n = 0;
@@ -65,7 +64,6 @@ namespace Epick {
 				}
 				while (file.query_exists());
 			}
-
 		}
 
 
@@ -87,7 +85,6 @@ namespace Epick {
 				PaletteColumn.BLUE_COLUMN, color.blue,
 				PaletteColumn.MARKUP_COLUMN, "<b>%s</b>\n<small>%s</small>".printf(color.to_x11name(), color.to_string())
 			);
-
 		}
 
 
@@ -132,15 +129,26 @@ namespace Epick {
 			return true;
 		}
 
-		public bool save() {
 
-			debug ("Saving to file: " + file.get_parse_name());
+		/**
+		 * Save palette to disk
+		 * Filename is the palette's name
+		 *
+		 * @return bool 		Success
+		 */
+		public bool save() {
 
 			try {
 
 				if (file.query_exists()) {
 					file.delete();
 				}
+
+				// Don't save empty palettes
+				if (list_store.iter_n_children(null) == 0) {
+					return true;
+				}
+
 				var dos = new DataOutputStream(file.create(FileCreateFlags.REPLACE_DESTINATION));
 
 				list_store.foreach( (model, path, iter) => {
@@ -151,7 +159,7 @@ namespace Epick {
 						Palette.PaletteColumn.BLUE_COLUMN, out blue,
 						-1
 					);
-					var color = new Color();
+					var color = Color();
 					color.red = red;
 					color.green = green;
 					color.blue = blue;

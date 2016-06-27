@@ -29,7 +29,7 @@ namespace Epick {
 
 		private PaletteWindow palette_window;
 
-		private PickerWindow picker_window;
+		// private PickerWindow picker_window;
 
 		private SettingsDialog settings_dialog;
 
@@ -63,12 +63,15 @@ namespace Epick {
 
 			palette_window = new PaletteWindow(this);
 
+			palette_window.new_palette_button_clicked.connect( () => {
+					debug ("The »New palette« Button has been clicked, cowboy!");
+					this.activate_action("new_palette", null);
+				});
+
 			settings = new GLib.Settings("de.hannenz.epick");
 
 			settings.changed["view-mode"].connect(set_view_mode);
 			set_view_mode();
-
-//			picker_window = new PickerWindow(this);
 
 			settings_dialog = new SettingsDialog(settings);
 
@@ -131,6 +134,11 @@ namespace Epick {
 			add_accelerator("<Ctrl>P", "app.pick", null);
 			add_action(action);
 
+			action = new GLib.SimpleAction("close_palette", null);
+			action.activate.connect(close_palette);
+			add_accelerator("<Ctrl>W", "app.close_palette", null);
+			add_action(action);
+
 		 	var builder = new Gtk.Builder.from_string(ui, -1);
 		 	var menu = builder.get_object("appmenu") as GLib.MenuModel;
 			set_app_menu(menu);
@@ -177,22 +185,28 @@ namespace Epick {
 
 		protected void new_palette() {
 
-			debug ("New palette");
-
-
+			var box = new Box(Orientation.VERTICAL, 0);
 			var entry = new Entry();
-			var dlg = new Gtk.Dialog.with_buttons("New palette", null, Gtk.DialogFlags.MODAL, 
-				"OK", Gtk.ResponseType.OK, 
-				"CANCEL", Gtk.ResponseType.CANCEL,
+			entry.set_activates_default(true);
+			box.pack_start(new Label("Name"));
+			box.pack_start(entry);
+
+			var dlg = new Gtk.Dialog.with_buttons(
+				"New palette",
+				null,
+				Gtk.DialogFlags.MODAL,
+				"Cancel", Gtk.ResponseType.CANCEL,
+				"OK", Gtk.ResponseType.OK,
 				null
 			);
 			var content_area = dlg.get_content_area();
-			content_area.add(entry);
+			content_area.add(box);
 
-			dlg.set_modal(true);
+			dlg.set_default_response(ResponseType.OK);
+
 			dlg.show_all();
-			var response = dlg.run();
-			if (response == Gtk.ResponseType.OK) {
+
+			if (dlg.run() == Gtk.ResponseType.OK) {
 
 				string name = entry.get_text();
 				if (name.length > 0) {
@@ -205,6 +219,10 @@ namespace Epick {
 			dlg.destroy();
 		}
 
+
+		protected void close_palette() {
+			palette_window.remove_palette();
+		}
 
 
 
@@ -286,11 +304,13 @@ namespace Epick {
 					debug ("Loading palette: %s".printf(file_path));
 
 					var palette = new Palette(file_info.get_name(), file_path);
+					if (palette.load()) {
 
-					palettes.append(palette);
+						palettes.append(palette);
 
-					palette_window.add_palette(palette);
-					n++;
+						palette_window.add_palette(palette);
+						n++;
+					}
 				}
 
 				if (n == 0) {

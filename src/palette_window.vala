@@ -137,7 +137,7 @@ namespace Epick {
 			// Label with close button
 			var label = new Label(palette.name);
 
-			var img = new Image.from_icon_name("dialog-close", Gtk.IconSize.MENU);
+			var img = new Image.from_icon_name("window-close", Gtk.IconSize.MENU);
 
 			var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
 

@@ -25,7 +25,7 @@ find_package(PkgConfig)
 pkg_check_modules(DEPS REQUIRED gtk+-3.0 appindicator3-0.1 gee-0.8)
 add_definitions(${DEPS_CFLAGS})
 add_definitions(-DGETTEXT_PACKAGE=\"${GETTEXT_PACKAGE}\")
-link_libraries(${DEPS_LIBRARIES})
+link_libraries(${DEPS_LIBRARIES} -lm)
 link_directories(${DEPS_LIBRARY_DIRS})
 
 # make sure we have vala

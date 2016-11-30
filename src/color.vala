@@ -1,5 +1,6 @@
 using Gdk;
 using Gee;
+using GLib.Math;
 
 namespace Epick {
 
@@ -51,23 +52,66 @@ namespace Epick {
 
 		/**
 		 * Return the X11 color name
+		 * 
+		 * Inspired by http://shallowsky.com/colormatch/colormatch.php.txt
+		 *
 		 * @param bool 	exact	If true, only return exact match,
 		 * 						else return closest color name
 		 * @return string
 		 */
 		public string to_x11name (bool exact = true) {
 
-			uint32 hex = (int)(red * (256 * 65536) + green * ( 256 * 256)  + blue * 256);
 			string name = "Nameless color";
+			double newdist, dist = 255 * Math.sqrt(3.0);
+			double nmatches = 0;
+			uint32 r,g,b,r1,g1,b1;
 
-			if (exact) {
+			r = (int)(red * 256.0);
+			g = (int)(green * 256.0);
+			b = (int)(blue * 256.0);
 
-				if (x11names.has_key(hex)) {
-					name = x11names.get(hex);
+			foreach (var x11color in x11names.entries) {
+
+				/* hex = x11color.key; */
+				r1 = (x11color.key & 0xff0000) >> 16;
+				g1 = (x11color.key & 0x00ff00) >> 8;
+				b1 = x11color.key & 0x0000ff;
+
+				if (r == r1 && g == g1 && b == b1) {
+					nmatches++;
+					dist = 0;
+					name = x11color.value;
+				}
+				else {
+					newdist = Math.sqrt(
+						Math.pow((double)(r - r1), 2) + 
+						Math.pow((double)(g - g1), 2) + 
+						Math.pow((double)(b - b1), 2)
+					);
+					if (newdist < dist) {
+						dist = newdist;
+						name = x11color.value;
+					}
 				}
 			}
-
+			
 			return name;
+
+
+
+
+			/* uint32 hex = (int)(red * (256 * 65536) + green * ( 256 * 256)  + blue * 256); */
+
+
+
+			/* if (exact) { */
+            /*  */
+			/* 	if (x11names.has_key(hex)) { */
+			/* 		name = x11names.get(hex); */
+			/* 	} */
+			/* } */
+            /*  */
+			/* return name; */
 
 			// int r = (int)(rgba.red * 255.0);
 			// int g = (int)(rgba.green * 255);

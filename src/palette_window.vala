@@ -206,6 +206,19 @@ namespace Epick {
 
 					popover.show_all();
 
+					var menu = new GLib.Menu();
+					menu.append("Copy to clipboard", "copy-clipboard");
+					popover.bind_model(menu, "app");
+
+					// Actions for context menu (popover)
+					GLib.SimpleAction copy_clipboard = new GLib.SimpleAction("copy-clipboard", null);
+					var _app = this.application as Epick;
+					_app.add_action(copy_clipboard);
+					copy_clipboard.activate.connect(() => {
+						print ("Copy to clipboard has been activated\n");
+						// Get the current palette (from _app)
+					});
+
 				});
 
 

@@ -139,6 +139,8 @@ namespace Epick {
 			add_accelerator("<Ctrl>W", "app.close_palette", null);
 			add_action(action);
 
+
+
 		 	var builder = new Gtk.Builder.from_string(ui, -1);
 		 	var menu = builder.get_object("appmenu") as GLib.MenuModel;
 			set_app_menu(menu);

@@ -206,17 +206,34 @@ namespace Epick {
 
 					popover.show_all();
 
+					var _app = this.application as Epick;
+
 					var menu = new GLib.Menu();
 					menu.append("Copy to clipboard", "copy-clipboard");
+					menu.append("Remove from palette", "remove-from-palette");
 					popover.bind_model(menu, "app");
 
 					// Actions for context menu (popover)
 					GLib.SimpleAction copy_clipboard = new GLib.SimpleAction("copy-clipboard", null);
-					var _app = this.application as Epick;
 					_app.add_action(copy_clipboard);
 					copy_clipboard.activate.connect(() => {
-						print ("Copy to clipboard has been activated\n");
+						TreeIter iter;
 						// Get the current palette (from _app)
+						Palette palette = _app.palettes.nth_data(_app.current_palette);
+						palette.list_store.get_iter(out iter, path);
+						string hexstring;
+						palette.list_store.get(iter, Palette.PaletteColumn.HEX_STRING_COLUMN, out hexstring);
+						print ("Copy to clipboard has been activated: %s\n".printf(hexstring));
+					});
+
+					GLib.SimpleAction remove = new GLib.SimpleAction("remove-from-palette", null);
+					_app.add_action(remove);
+					remove.activate.connect(() => {
+						TreeIter iter;
+						// Get the current palette (from _app)
+						Palette palette = _app.palettes.nth_data(_app.current_palette);
+						palette.list_store.get_iter(out iter, path);
+						palette.list_store.remove(iter);
 					});
 
 				});

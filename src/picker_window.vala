@@ -238,13 +238,12 @@ namespace Epick {
 				posY = y - (offset + previewSize);
 			}
 
-			// move(posX, posY);
+			move(posX, posY);
 
-			// Gdk.Event event = display.get_event();
-			// if (event != null && event.type == EventType.BUTTON_PRESS){
-			// 	stdout.printf("click\n");
-			// }
-
+			Gdk.Event event = display.get_event();
+			if (event != null && event.type == EventType.BUTTON_PRESS){
+				stdout.printf("click\n");
+			}
 		}
 	}
 }

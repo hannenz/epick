@@ -192,51 +192,18 @@ namespace Epick {
 			var cr_text = new CellRendererText();
 			tv.insert_column_with_attributes(-1, "Name", cr_text, "markup", Palette.PaletteColumn.MARKUP_COLUMN);
 
+			var _app = this.application as Epick;
+			Palette palette = _app.palettes.nth_data(_app.current_palette);
 
 			tv.row_activated.connect( (tv, path, column) => {
-					debug ("The row has been activated");
+				debug ("The row has been activated");
+				Rectangle rect;
+				tv.get_cell_area(path, column, out rect);
 
-
-					var popover = new ActionPopover(tv);
-
-					// Get the cell area
-					Rectangle rect;
-					tv.get_cell_area(path, column, out rect);
-					popover.set_pointing_to(rect);
-
-					popover.show_all();
-
-					var _app = this.application as Epick;
-
-					var menu = new GLib.Menu();
-					menu.append("Copy to clipboard", "copy-clipboard");
-					menu.append("Remove from palette", "remove-from-palette");
-					popover.bind_model(menu, "app");
-
-					// Actions for context menu (popover)
-					GLib.SimpleAction copy_clipboard = new GLib.SimpleAction("copy-clipboard", null);
-					_app.add_action(copy_clipboard);
-					copy_clipboard.activate.connect(() => {
-						TreeIter iter;
-						// Get the current palette (from _app)
-						Palette palette = _app.palettes.nth_data(_app.current_palette);
-						palette.list_store.get_iter(out iter, path);
-						string hexstring;
-						palette.list_store.get(iter, Palette.PaletteColumn.HEX_STRING_COLUMN, out hexstring);
-						print ("Copy to clipboard has been activated: %s\n".printf(hexstring));
-					});
-
-					GLib.SimpleAction remove = new GLib.SimpleAction("remove-from-palette", null);
-					_app.add_action(remove);
-					remove.activate.connect(() => {
-						TreeIter iter;
-						// Get the current palette (from _app)
-						Palette palette = _app.palettes.nth_data(_app.current_palette);
-						palette.list_store.get_iter(out iter, path);
-						palette.list_store.remove(iter);
-					});
-
-				});
+				TreeIter iter;
+				palette.list_store.get_iter(out iter, path);
+				popover_on_color(tv, iter, rect);
+			});
 
 
 			return tv;			
@@ -252,23 +219,50 @@ namespace Epick {
 			iv.set_pixbuf_column(Palette.PaletteColumn.PIXBUF_COLUMN);
 			iv.set_markup_column(Palette.PaletteColumn.MARKUP_COLUMN);
 
-
+			var _app = this.application as Epick;
+			Palette palette = _app.palettes.nth_data(_app.current_palette);
+			
 			iv.item_activated.connect( (path) => {
-
-				var popover = new ActionPopover(iv);
-
-				// Get the cell area
-				Rectangle rect;
-				iv.get_cell_rect(path, null, out rect);
-				popover.set_pointing_to(rect);
-
-				popover.show_all();
+				TreeIter iter;
+				palette.list_store.get_iter(out iter, path);
+				popover_on_color(iv, iter, null);
 			});
 
-
-
-
 			return iv;
+		}
+
+		protected void popover_on_color(Widget widget, TreeIter iter, Rectangle? rect) {
+			var popover = new ActionPopover(widget);
+			var _app = this.application as Epick;
+			Palette palette = _app.palettes.nth_data(_app.current_palette);
+
+			// Get the cell area
+			if (rect != null) {
+				popover.set_pointing_to(rect);
+			}
+
+			popover.show_all();
+
+			var menu = new GLib.Menu();
+			menu.append("Copy to clipboard", "copy-clipboard");
+			menu.append("Remove from palette", "remove-from-palette");
+			popover.bind_model(menu, "app");
+
+			// Actions for context menu (popover)
+			GLib.SimpleAction copy_clipboard = new GLib.SimpleAction("copy-clipboard", null);
+			_app.add_action(copy_clipboard);
+			copy_clipboard.activate.connect(() => {
+				string hexstring;
+				palette.list_store.get(iter, Palette.PaletteColumn.HEX_STRING_COLUMN, out hexstring);
+				var clipboard = Clipboard.get_for_display(this.get_display(), Gdk.SELECTION_CLIPBOARD);
+				clipboard.set_text(hexstring, -1);
+			});
+
+			GLib.SimpleAction remove = new GLib.SimpleAction("remove-from-palette", null);
+			_app.add_action(remove);
+			remove.activate.connect(() => {
+				palette.list_store.remove(iter);
+			});
 		}
 
 

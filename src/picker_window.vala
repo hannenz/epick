@@ -140,9 +140,6 @@ namespace Epick {
 			// }
 		}
 
-
-		
-
 		protected void pick() {
 
 			clipboard.set_text(color_string, -1);
@@ -240,11 +237,6 @@ namespace Epick {
 			}
 
 			move(posX, posY);
-
-			/* Gdk.Event event = display.get_event(); */
-			/* if (event != null && event.type == EventType.BUTTON_PRESS){ */
-			/* 	stdout.printf("click\n"); */
-			/* } */
 		}
 	}
 }
